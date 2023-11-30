@@ -1,15 +1,27 @@
 import { DocumentType } from "@typegoose/typegoose";
 import { omit } from "lodash";
-import SessionModel from "../model/session.model";
+import SessionModel, { Session } from "../model/session.model";
 import { privateFields, User } from "../model/user.model";
 import { signJwt } from "../utils/jwt";
+import { FilterQuery, UpdateQuery } from "mongoose";
 
 export async function createSession({ userId }: { userId: string }) {
   return SessionModel.create({ user: userId });
 }
 
+export async function findSessionsByUserId(userId: string) {
+  return SessionModel.find({ user: userId, valid: true });
+}
+
 export async function findSessionById(id: string) {
   return SessionModel.findById(id);
+}
+
+export async function updateSessionsByUserId(
+  userId: string,
+  update: UpdateQuery<Session>
+) {
+  return SessionModel.updateMany({ user: userId, valid: true }, update);
 }
 
 export async function signRefreshToken({ userId }: { userId: string }) {

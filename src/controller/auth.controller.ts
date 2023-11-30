@@ -2,12 +2,15 @@ import { Request, Response } from "express";
 import { get } from "lodash";
 import { CreateSessionInput } from "../schema/auth.schema";
 import {
+  findSessionsByUserId,
   findSessionById,
   signAccessToken,
   signRefreshToken,
+  updateSessionsByUserId,
 } from "../service/auth.service";
 import { findUserByEmail, findUserById } from "../service/user.service";
 import { verifyJwt } from "../utils/jwt";
+import log from "../utils/logger";
 
 export async function createSessionHandler(
   req: Request<{}, {}, CreateSessionInput>,
@@ -71,4 +74,17 @@ export async function refreshAccessTokenHandler(req: Request, res: Response) {
   const accessToken = signAccessToken(user);
 
   return res.send({ accessToken });
+}
+
+export async function deleteSessionHandler(req: Request, res: Response) {
+  const userId = res.locals.user._id;
+
+  await updateSessionsByUserId(userId, { valid: false });
+
+  res.locals.user = null;
+
+  return res.send({
+    accessToken: null,
+    refreshToken: null,
+  });
 }
